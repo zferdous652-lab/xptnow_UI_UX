@@ -1,13 +1,13 @@
-# #01 PRD: XPTNOW Service Bond Portal
+# #01 PRD: XPTNOW Escrow Marketplace
 
 | | |
 |---|---|
 | **Document** | Product Requirements Document |
-| **Product** | XPTNOW Service Bond Portal (investor demo, design phase) |
+| **Product** | XPTNOW Escrow Marketplace (investor demo, design phase) |
 | **Owner** | Zannat (UI/UX design) |
 | **Status** | Draft for review |
-| **Last updated** | 7 Nov 2026 |
-| **Live demo** | [XPTNOW Bond Demo](https://claude.ai/artifact/K73aknsXmo8UgSJqHWmBGE) |
+| **Last updated** | 9 Nov 2026 |
+| **Live demo** | [XPTNOW Escrow Demo](https://claude.ai/artifact/K73aknsXmo8UgSJqHWmBGE) |
 
 Related docs: [AppFlow](AppFlow.md) · [UI_Spec](UI_Spec.md) · [TRD](TRD.md) · [Schema](Schema.md) · [Plan](Plan.md)
 
@@ -15,67 +15,68 @@ Related docs: [AppFlow](AppFlow.md) · [UI_Spec](UI_Spec.md) · [TRD](TRD.md) ·
 
 ## 1. Source context
 
-This product was scoped from two slides of the XPT investor discussion deck. They are the only source brief for this design work.
+The work started from two slides of the XPT investor discussion deck: **Service bonds** and **Online deposits**.
 
 ![XPT investor discussion slides: Service Bonds and Online Deposits](assets/xpt-investor-slides.jpg)
 
-What the slides say, in short:
+The slides gave the core idea: **XPT points are locked as a guarantee, checked against proof, and then released or deducted by a neutral reviewer.** Pilot measures on the slides were acceptance time, dispute rate and bond reuse.
 
-**Service bonds: "A contractor backs the repair with a bond."** Pegasuswork can connect the bond to the work order and the inspection record.
-1. **Lock:** the contractor posts XPT. They set the deadline, the acceptance criteria and a starting RM-equivalent bond before work begins.
-2. **Verify:** the developer inspects. They capture photos and sign-off, AI can flag missing evidence, and a named reviewer handles disputes.
-3. **Release:** return or deduct. The locked XPT is returned after acceptance. Disputed amounts are held, and agreed deductions are applied.
-- *Pilot measure:* acceptance time, dispute rate, and bond reuse across jobs.
+On 9 Nov 2026 the product owner turned this into one simpler model, **an escrow marketplace like freelancer.com, paid in XPT points**:
 
-**Online deposits: "The deposit depends on who needs protection."** This section is **out of scope for now** (see section 9).
+> A mobile shop keeper (service provider) wants to repair a phone for 500 XPT. The provider sets the XPT price and shares it with the customer by ID. After the customer approves, 500 XPT is deducted from the customer's XPT wallet and held by the Reviewer (XPTNOW). After the work is done, the provider uploads POD. If the customer is satisfied, they ask the Reviewer to release the points to the provider. If the customer never asks, the provider can file a claim with the Reviewer.
+
+This replaces the earlier contractor-bond portal (v7) and the separate "Online Deposits / XPT Hold" idea. See the [Plan](Plan.md#1-decision-log) for the history.
 
 ## 2. Problem
 
-When a developer hires a contractor to fix a defect in a buyer's unit, three things often go wrong:
-- The **customer** has no visibility into the repair and no guarantee it will be done properly.
-- The **developer** has little leverage once the contractor has been paid, and inspection evidence is scattered across chats and photos.
-- **Disputes** about quality have no neutral process, so they drag on.
+When a customer pays for a service up front, either side can be let down:
+- The **customer** pays first and has no protection if the work is poor or never done.
+- The **provider** does the work first and has no guarantee they will be paid.
+- **Disagreements** have no neutral process, so they drag on.
 
 ## 3. Solution
 
-A web portal where every repair is **backed by an XPT bond**. The contractor locks XPT before work starts. The XPT is returned only after the work passes inspection and the customer confirms. If there is a disagreement, a **neutral reviewer** decides how much (if anything) is deducted.
+A web portal where every service is **paid in XPT points through escrow**:
+1. The provider sends a quote in XPT points to the customer's XPT ID.
+2. The customer approves, and the points move from their wallet into escrow, **held by XPTNOW**.
+3. The provider does the work and uploads **proof of delivery (POD)**.
+4. The customer requests release, and an XPTNOW **Reviewer releases the points by hand**.
+5. If the customer stays silent for **3 days after POD**, the provider can **file a claim**. If the customer raises a concern, the Reviewer decides: release, refund, or split.
 
-One login portal, with **role-based consoles (RBAC)**. Each person sees only what their role needs.
+One login portal, with **role-based consoles (RBAC)**. **XPT points only: no RM is shown anywhere.**
 
 ## 4. Users and roles
 
 | Role | Who | Console | Main goal |
 |---|---|---|---|
-| **Customer** | Unit owner or buyer | Customer portal | Report a defect, follow the repair, confirm or raise a concern |
-| **Contractor** | Renovation or repair company | Contractor portal | Win jobs, lock the bond, prove completion, get the bond back |
-| **Developer** | Developer's defects or project team | Service Provider portal | Turn reports into work orders, assign contractors, inspect work |
-| **Reviewer** | Neutral party (e.g. Pegasuswork QA) | Service Provider portal (same console, extra rights) | Decide disputes fairly |
+| **Customer** | Anyone paying for a service | Customer portal | Find a provider, approve a quote, get the work done, then release or raise a concern |
+| **Service Provider** | Contractor, mobile/electronics repair, shop owner or retailer, dealer, rental, freelancer | Service Provider portal | Register with a profession, set XPT prices, send quotes, prove the work, get paid |
+| **Reviewer** | XPTNOW team, the points owner and neutral escrow holder | Reviewer portal | Hold points, release or refund them by hand, decide claims and disputes, approve providers |
 
-The Developer and the Reviewer share **one Service Provider console**. The Reviewer sees an extra **Disputes** page, and the Developer never sees it. The Reviewer must be a different person from the Developer, because a party to a dispute cannot judge it.
+The old **Developer** role is dropped. Its work (checking proof, approving providers) now sits with the Reviewer, who has the most priority tasks.
 
 ## 5. Goals and success measures
 
-| Goal | Measure (from the slides) |
+| Goal | Measure |
 |---|---|
-| Faster sign-off on repairs | **Acceptance time:** from "repair completed" to "bond released" |
-| Fewer, fairer disputes | **Dispute rate:** disputed jobs ÷ completed jobs |
-| Capital efficiency for contractors | **Bond reuse:** number of jobs one locked amount is reused across |
+| Fast, fair payouts | **Time to release:** from POD uploaded to points released |
+| Fewer disputes | **Dispute rate:** disputed jobs ÷ completed jobs |
+| Trust on both sides | **Claim rate:** jobs where the provider had to file a claim |
+| Healthy supply | **Provider approvals:** time from registration to verified |
 
 ## 6. Scope (this phase)
 
 **In scope**
-- Login portal with role selection.
-- Customer console: home, report an issue, my repairs with a timeline, confirm or raise a concern, help & FAQ.
-- Contractor console: home, job offers, lock bond, active jobs (upload proof, reply to disputes), XPT wallet.
-- Service Provider console:
-  - Developer: overview with metrics, customer reports, jobs table, inspections, contractors, roles & permissions.
-  - Reviewer: overview, disputes, jobs (view only), roles & permissions.
-- Shared job timeline and in-app notifications.
-- Investor-demo helpers: "Switch role" menu and "Restart demo".
+- Login portal with three roles, plus provider **registration** (pick a profession → business details → submitted for review).
+- **Customer:** Home (XPT ID with copy), Find a provider (filter by profession, verified badge, ratings), Quotes (approve or decline), My services (POD, request release, raise a concern, rate), XPT wallet, Help & FAQ.
+- **Service Provider:** Dashboard, My services (catalog prices within profession limits), Send a quote (by customer XPT ID), Jobs (upload POD, claim after 3 days), XPT wallet, Business profile.
+- **Reviewer:** Priority queue, Release requests, Claims, Disputes, Escrow ledger, Provider approvals, All providers, All jobs, Roles & permissions.
+- Job timeline on every console, and in-app notifications.
+- Investor-demo helpers: "Switch role", "Restart demo", and "Skip 1 day" to show the 3-day claim window.
 
 **Out of scope (this phase)**
-- Online Deposits (preorder, rental, non-delivery). This is postponed.
 - Real authentication, payments, XPT ledger integration and file storage. These are covered as requirements in the [TRD](TRD.md).
+- How customers get XPT points (top-up), point expiry, and fees. These are open questions.
 - Integration with the live xptnow.ai codebase. This design work is deliberately separate.
 
 ## 7. Functional requirements
@@ -84,41 +85,47 @@ The Developer and the Reviewer share **one Service Provider console**. The Revie
 |---|---|---|
 | FR-01 | Sign in on one portal; the role decides which console opens | All |
 | FR-02 | Collapsible sidebar with grouped, expandable sections; clicking an item changes the view | All |
-| FR-03 | Report a defect with area, issue type, description and photos | Customer |
-| FR-04 | See that an active repair is protected by an XPT bond, with its amount | Customer |
-| FR-05 | Confirm the repair, or raise a concern that goes to the Reviewer | Customer |
-| FR-06 | Create a work order from a report: assign a contractor, set the bond amount, deadline and acceptance criteria | Developer |
-| FR-07 | Accept a job offer by locking the required XPT from the wallet | Contractor |
-| FR-08 | Upload completion proof (after photo, 24-hour ponding test) | Contractor |
-| FR-09 | Inspect with an evidence checklist; the AI check flags missing evidence; accept only when complete | Developer |
-| FR-10 | Raise a dispute with a reason and a requested deduction | Developer |
-| FR-11 | Reply to a dispute with their side | Contractor |
-| FR-12 | Decide a dispute: approve a deduction amount or reject; funds release immediately | Reviewer |
-| FR-13 | Release the bond: full return, or return minus the deduction | System |
-| FR-14 | Job timeline on every console with done, now and upcoming steps, and "YOU" tags | All |
-| FR-15 | Notifications for each hand-off between roles | All |
-| FR-16 | Jobs table with status chips, filters (All, Active, Disputed, Released) and search | Developer, Reviewer |
-| FR-17 | Wallet: available, locked, bond reuse, transactions | Contractor |
-| FR-18 | Roles & permissions page showing the RBAC matrix | Developer, Reviewer |
+| FR-03 | Register a business: choose a profession first, then business details; the account stays pending until a Reviewer approves it | Provider |
+| FR-04 | Set XPT prices per service, within the profession's minimum and maximum | Provider |
+| FR-05 | Send a quote (service, XPT amount, description, complete-by date) to a customer by XPT ID; the ID is checked before sending | Provider |
+| FR-06 | Find providers by profession, with verified badge, rating, job count and "from" price | Customer |
+| FR-07 | Approve or decline a quote; on approval the amount moves from the customer's wallet to escrow | Customer |
+| FR-08 | See points on hold, held by XPTNOW, on every open job | Customer, Provider |
+| FR-09 | Upload POD (work photo and signed handover note); both are required | Provider |
+| FR-10 | Request release when satisfied, or raise a concern with a reason | Customer |
+| FR-11 | File a claim when the customer has not replied **3 days after POD** | Provider |
+| FR-12 | Reply to a concern with their side | Provider |
+| FR-13 | Release held points to the provider, **by hand only** | Reviewer |
+| FR-14 | Decide a claim: approve (release) or reject (job goes back to waiting on the customer, who is reminded) | Reviewer |
+| FR-15 | Decide a dispute: release all, refund all, or split with a refund amount | Reviewer |
+| FR-16 | Approve or reject provider registrations | Reviewer |
+| FR-17 | Priority queue that lists everything waiting on a Reviewer | Reviewer |
+| FR-18 | Escrow ledger and all-jobs table with filters and search | Reviewer |
+| FR-19 | Rate the provider after release | Customer |
+| FR-20 | Job timeline on every console with done, now and upcoming steps, and "YOU" tags | All |
+| FR-21 | Notifications for each hand-off between roles | All |
+| FR-22 | Wallet: available, on hold, transactions | Customer, Provider |
+| FR-23 | Roles & permissions page showing the RBAC matrix | Reviewer |
 
 ## 8. Business rules
 
-1. A job cannot start until the contractor has **locked** the full bond.
-2. The bond is released **only** after the developer accepts **and** the customer confirms, or after a reviewer decision.
-3. Only the **Reviewer** can decide a deduction. The Developer and the Customer can only raise a dispute.
-4. A deduction can never exceed the locked amount.
-5. While a dispute is open, the bond stays locked.
-6. Amounts are shown in XPT with an RM equivalent. The demo uses an illustrative 1 XPT ≈ RM 1.
+1. Only a **verified** provider can send quotes.
+2. A quote amount must be within the provider's profession limits (see [Schema §4](Schema.md#4-demo-seed-data-illustrative)).
+3. Points leave the customer's wallet **only when the customer approves** the quote, and go straight into escrow held by XPTNOW.
+4. The customer must have enough available points to approve.
+5. Release is **never automatic**. Only a Reviewer can release, refund or split, and always by hand.
+6. A provider can file a claim **only 3 days or more after POD**, and only if the customer has not requested release or raised a concern.
+7. While a job is in escrow, nobody can spend those points.
+8. A refund or split can never exceed the held amount.
+9. All amounts are in **XPT points only**. No RM or other currency is shown.
+10. The UI never switches a user to another role or page after an action. Only the user switches.
 
-## 9. Online Deposits (parked)
+## 9. Assumptions and open questions
 
-From the slides: preorder (buyer reserves stock), rental (renter covers damage) and non-delivery (seller backs delivery). On 7 Nov 2026 the owner confirmed that **XPT is meant to be used in online deposits**. This will be planned as a separate phase.
-
-## 10. Assumptions and open questions
-
-- **Assumption:** the "customer" is the unit owner or buyer in a development under a defect liability period.
-- **Assumption:** the Reviewer sits at Pegasuswork. The slide says only "a named reviewer".
-- **Assumption:** deducted XPT funds rework and goes to the developer.
-- **Open:** the exact XPT to RM rate, and who funds the contractor's XPT wallet.
-- **Open:** should the customer also get a share of a deduction?
+- **Assumption:** XPTNOW employs the Reviewers, and a Reviewer never reviews a job they are part of.
+- **Assumption:** points in escrow sit in an XPTNOW escrow account until a Reviewer acts.
+- **Open:** how customers and providers get XPT points (top-up, rewards, purchase).
+- **Open:** do points expire?
+- **Open:** does XPTNOW take a fee on a release?
+- **Open:** is there a time limit for the Reviewer to act on a release request?
 - **Open:** where the real brand assets (SVG logo, exact hex codes) will come from.
